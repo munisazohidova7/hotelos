@@ -1,0 +1,8 @@
+com/hotelos/housekeeping/model/CleaningTask.class
+com/hotelos/housekeeping/service/HousekeepingService.class
+com/hotelos/housekeeping/listener/HousekeepingEventListener.class
+com/hotelos/housekeeping/model/CleaningTask$TaskStatus.class
+com/hotelos/housekeeping/config/RabbitMQConfig.class
+com/hotelos/housekeeping/HousekeepingServiceApplication.class
+com/hotelos/housekeeping/controller/HousekeepingController.class
+com/hotelos/housekeeping/repository/CleaningTaskRepository.class

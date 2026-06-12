@@ -1,0 +1,7 @@
+/Users/user/Downloads/hotelos/hotelos/housekeeping-service/src/main/java/com/hotelos/housekeeping/HousekeepingServiceApplication.java
+/Users/user/Downloads/hotelos/hotelos/housekeeping-service/src/main/java/com/hotelos/housekeeping/config/RabbitMQConfig.java
+/Users/user/Downloads/hotelos/hotelos/housekeeping-service/src/main/java/com/hotelos/housekeeping/controller/HousekeepingController.java
+/Users/user/Downloads/hotelos/hotelos/housekeeping-service/src/main/java/com/hotelos/housekeeping/listener/HousekeepingEventListener.java
+/Users/user/Downloads/hotelos/hotelos/housekeeping-service/src/main/java/com/hotelos/housekeeping/model/CleaningTask.java
+/Users/user/Downloads/hotelos/hotelos/housekeeping-service/src/main/java/com/hotelos/housekeeping/repository/CleaningTaskRepository.java
+/Users/user/Downloads/hotelos/hotelos/housekeeping-service/src/main/java/com/hotelos/housekeeping/service/HousekeepingService.java

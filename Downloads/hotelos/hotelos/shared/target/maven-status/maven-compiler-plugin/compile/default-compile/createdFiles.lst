@@ -1,0 +1,8 @@
+com/hotelos/shared/model/Guest$ServiceCharge.class
+com/hotelos/shared/event/HotelEvent.class
+com/hotelos/shared/event/RabbitMQConstants.class
+com/hotelos/shared/event/HotelEvent$EventType.class
+com/hotelos/shared/model/Room$RoomType.class
+com/hotelos/shared/model/Room.class
+com/hotelos/shared/model/Guest.class
+com/hotelos/shared/model/Room$RoomStatus.class

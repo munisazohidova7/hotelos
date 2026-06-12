@@ -1,0 +1,8 @@
+com/hotelos/roomservice/controller/RoomServiceController.class
+com/hotelos/roomservice/service/RoomOrderService.class
+com/hotelos/roomservice/service/RoomOrderService$1.class
+com/hotelos/roomservice/repository/RoomServiceOrderRepository.class
+com/hotelos/roomservice/RoomServiceApplication.class
+com/hotelos/roomservice/model/RoomServiceOrder.class
+com/hotelos/roomservice/config/RabbitMQConfig.class
+com/hotelos/roomservice/model/RoomServiceOrder$OrderStatus.class

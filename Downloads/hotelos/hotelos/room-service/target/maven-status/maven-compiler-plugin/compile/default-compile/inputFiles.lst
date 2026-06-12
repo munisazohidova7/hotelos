@@ -1,0 +1,6 @@
+/Users/user/Downloads/hotelos/hotelos/room-service/src/main/java/com/hotelos/roomservice/RoomServiceApplication.java
+/Users/user/Downloads/hotelos/hotelos/room-service/src/main/java/com/hotelos/roomservice/config/RabbitMQConfig.java
+/Users/user/Downloads/hotelos/hotelos/room-service/src/main/java/com/hotelos/roomservice/controller/RoomServiceController.java
+/Users/user/Downloads/hotelos/hotelos/room-service/src/main/java/com/hotelos/roomservice/model/RoomServiceOrder.java
+/Users/user/Downloads/hotelos/hotelos/room-service/src/main/java/com/hotelos/roomservice/repository/RoomServiceOrderRepository.java
+/Users/user/Downloads/hotelos/hotelos/room-service/src/main/java/com/hotelos/roomservice/service/RoomOrderService.java

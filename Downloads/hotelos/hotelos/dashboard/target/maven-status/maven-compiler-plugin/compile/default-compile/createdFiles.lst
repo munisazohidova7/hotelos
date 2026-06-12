@@ -1,0 +1,7 @@
+com/hotelos/dashboard/config/WebSocketConfig.class
+com/hotelos/dashboard/DashboardApplication.class
+com/hotelos/dashboard/websocket/DashboardBroadcaster$1.class
+com/hotelos/dashboard/websocket/DashboardBroadcaster.class
+com/hotelos/dashboard/config/DashboardRabbitConfig.class
+com/hotelos/dashboard/config/SecurityConfig.class
+com/hotelos/dashboard/controller/DashboardController.class

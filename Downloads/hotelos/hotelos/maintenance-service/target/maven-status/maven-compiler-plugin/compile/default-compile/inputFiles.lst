@@ -1,0 +1,6 @@
+/Users/user/Downloads/hotelos/hotelos/maintenance-service/src/main/java/com/hotelos/maintenance/MaintenanceServiceApplication.java
+/Users/user/Downloads/hotelos/hotelos/maintenance-service/src/main/java/com/hotelos/maintenance/config/RabbitMQConfig.java
+/Users/user/Downloads/hotelos/hotelos/maintenance-service/src/main/java/com/hotelos/maintenance/controller/MaintenanceController.java
+/Users/user/Downloads/hotelos/hotelos/maintenance-service/src/main/java/com/hotelos/maintenance/model/MaintenanceIssue.java
+/Users/user/Downloads/hotelos/hotelos/maintenance-service/src/main/java/com/hotelos/maintenance/repository/MaintenanceIssueRepository.java
+/Users/user/Downloads/hotelos/hotelos/maintenance-service/src/main/java/com/hotelos/maintenance/service/MaintenanceService.java

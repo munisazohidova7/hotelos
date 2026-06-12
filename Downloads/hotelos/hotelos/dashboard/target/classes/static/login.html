@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HotelOS Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0f1a;
+            color: #c8d8e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .login-box {
+            background: #0d1520;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 48px 40px;
+            width: 380px;
+            text-align: center;
+        }
+        h1 { color: #4fc3f7; letter-spacing: 6px; font-size: 24px; margin-bottom: 8px; }
+        .subtitle { color: #3a5a7a; font-size: 12px; letter-spacing: 2px; margin-bottom: 36px; }
+        .form-group { margin-bottom: 16px; text-align: left; }
+        label { display: block; font-size: 11px; letter-spacing: 2px; color: #4a6a8a; margin-bottom: 6px; }
+        input {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0a0f1a;
+            border: 1px solid #1e3a5f;
+            border-radius: 4px;
+            color: #c8d8e8;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+        }
+        input:focus { border-color: #4fc3f7; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #1565c0;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover { background: #1976d2; }
+        .error { color: #ef5350; font-size: 12px; margin-top: 12px; }
+        .hint { color: #3a5a7a; font-size: 11px; margin-top: 24px; }
+    </style>
+</head>
+<body>
+<div class="login-box">
+    <h1>⬡ HOTELOS</h1>
+    <div class="subtitle">OPERATIONS DASHBOARD</div>
+
+    <form method="POST" action="/perform_login">
+        <div class="form-group">
+            <label>USERNAME</label>
+            <input type="text" name="username" placeholder="staff" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+            <label>PASSWORD</label>
+            <input type="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <button type="submit">SIGN IN →</button>
+    </form>
+
+    <div class="hint">Default: staff / hotel123 &nbsp;|&nbsp; manager / manager456</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+com/hotelos/maintenance/config/RabbitMQConfig.class
+com/hotelos/maintenance/repository/MaintenanceIssueRepository.class
+com/hotelos/maintenance/controller/MaintenanceController.class
+com/hotelos/maintenance/model/MaintenanceIssue$IssueStatus.class
+com/hotelos/maintenance/model/MaintenanceIssue$Urgency.class
+com/hotelos/maintenance/service/MaintenanceService.class
+com/hotelos/maintenance/MaintenanceServiceApplication.class
+com/hotelos/maintenance/model/MaintenanceIssue.class

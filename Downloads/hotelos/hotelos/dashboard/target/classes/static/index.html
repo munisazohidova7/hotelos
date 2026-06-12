@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotelOS — Operations Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0f1a;
+            color: #c8d8e8;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #0d1520;
+            border-bottom: 2px solid #1e3a5f;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 { color: #4fc3f7; font-size: 22px; letter-spacing: 4px; }
+        .header .status { font-size: 12px; color: #66bb6a; }
+        .ws-indicator {
+            display: inline-block;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #f44336;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        .ws-indicator.connected { background: #66bb6a; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 20px;
+            padding: 24px 32px;
+        }
+
+        .panel {
+            background: #0d1520;
+            border: 1px solid #1e3a5f;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #111e30;
+            padding: 12px 20px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #4fc3f7;
+            text-transform: uppercase;
+            border-bottom: 1px solid #1e3a5f;
+        }
+
+        .panel-body { padding: 16px; }
+
+        /* Room Grid */
+        .rooms-panel { grid-column: 1 / -1; }
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .room-card {
+            border: 1px solid #1e3a5f;
+            border-radius: 4px;
+            padding: 14px 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .room-card .room-num { font-size: 20px; font-weight: bold; color: #e0e8f0; }
+        .room-card .room-type { font-size: 10px; color: #5a7a9a; margin: 4px 0; letter-spacing: 1px; }
+        .room-card .room-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-top: 6px;
+        }
+        .room-card .guest-name { font-size: 10px; color: #7aabcc; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .status-CLEAN      { background: #1a3a2a; color: #66bb6a; border-color: #2a5a3a; }
+        .status-OCCUPIED   { background: #1a2a3a; color: #4fc3f7; border-color: #2a4a6a; }
+        .status-DIRTY      { background: #3a2a1a; color: #ffa726; border-color: #5a4a2a; }
+        .status-CLEANING   { background: #2a1a3a; color: #ab47bc; border-color: #4a2a5a; }
+        .status-MAINTENANCE{ background: #3a1a1a; color: #ef5350; border-color: #5a2a2a; }
+
+        .badge-CLEAN      { background: #1b4d2e; color: #69db7c; }
+        .badge-OCCUPIED   { background: #1c3d5a; color: #4fc3f7; }
+        .badge-DIRTY      { background: #4d3b1b; color: #ffa726; }
+        .badge-CLEANING   { background: #3d1b4d; color: #cc5de8; }
+        .badge-MAINTENANCE{ background: #4d1b1b; color: #ff6b6b; }
+
+        /* Orders & Issues panels */
+        .order-item, .issue-item {
+            border: 1px solid #1e3a5f;
+            border-radius: 4px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .order-item .order-id { color: #5a7a9a; font-size: 10px; }
+        .order-item .order-room { color: #4fc3f7; font-size: 14px; font-weight: bold; }
+        .order-item .order-items-list { color: #8aabcc; margin-top: 4px; }
+
+        .issue-item .issue-id { color: #5a7a9a; font-size: 10px; }
+        .issue-item .issue-room { color: #ffa726; font-size: 14px; font-weight: bold; }
+        .issue-item .issue-desc { color: #8aabcc; margin-top: 4px; }
+        .issue-item .issue-tech { color: #66bb6a; font-size: 10px; margin-top: 4px; }
+
+        .urgency-CRITICAL { border-left: 3px solid #ef5350; }
+        .urgency-HIGH     { border-left: 3px solid #ffa726; }
+        .urgency-NORMAL   { border-left: 3px solid #4fc3f7; }
+        .urgency-LOW      { border-left: 3px solid #5a7a9a; }
+
+        .empty-state { color: #3a5a7a; font-size: 12px; text-align: center; padding: 20px; }
+
+        /* Event log */
+        #event-log {
+            max-height: 160px;
+            overflow-y: auto;
+            font-size: 11px;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #0f1e30;
+            color: #5a8aaa;
+        }
+        .log-entry .log-time { color: #2a4a6a; margin-right: 8px; }
+        .log-entry.new-entry { color: #66bb6a; animation: fadeLog 2s forwards; }
+        @keyframes fadeLog { 0%{color:#66bb6a} 100%{color:#5a8aaa} }
+
+        .highlight-flash { animation: flash 0.6s; }
+        @keyframes flash { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>⬡ HOTELOS</h1>
+    <div class="status">
+        <span class="ws-indicator" id="wsIndicator"></span>
+        <span id="wsStatus">Connecting...</span>
+        &nbsp;|&nbsp; <span id="clock"></span>
+    </div>
+</div>
+
+<div class="grid">
+
+    <!-- ROOM GRID -->
+    <div class="panel rooms-panel">
+        <div class="panel-header">Room Status Overview</div>
+        <div class="panel-body">
+            <div class="room-grid" id="roomGrid"></div>
+        </div>
+    </div>
+
+    <!-- ACTIVE ORDERS -->
+    <div class="panel">
+        <div class="panel-header">Room Service Orders</div>
+        <div class="panel-body" id="ordersList">
+            <div class="empty-state">No active orders</div>
+        </div>
+    </div>
+
+    <!-- MAINTENANCE ISSUES -->
+    <div class="panel">
+        <div class="panel-header">Maintenance Issues</div>
+        <div class="panel-body" id="issuesList">
+            <div class="empty-state">No open issues</div>
+        </div>
+    </div>
+
+    <!-- EVENT LOG -->
+    <div class="panel" style="grid-column: 1 / -1">
+        <div class="panel-header">Live Event Log</div>
+        <div class="panel-body">
+            <div id="event-log"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// --- Dashboard State ---
+const state = {
+    rooms: {},
+    orders: {},
+    issues: {}
+};
+
+const roomTypes = {101:'SINGLE',102:'SINGLE',103:'DOUBLE',104:'DOUBLE',105:'ACCESSIBLE',
+                   201:'SINGLE',202:'DOUBLE',203:'SUITE',204:'DOUBLE',205:'SUITE'};
+const roomFloors = {101:1,102:1,103:1,104:1,105:1,201:2,202:2,203:2,204:2,205:2};
+
+// --- Clock ---
+function updateClock() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// --- Initial State Load ---
+async function loadInitialState() {
+    try {
+        const res = await fetch('/api/state');
+        const data = await res.json();
+        if (data.rooms) {
+            Object.entries(data.rooms).forEach(([room, info]) => {
+                state.rooms[parseInt(room)] = info;
+            });
+        }
+        if (data.activeOrders) state.orders = data.activeOrders;
+        if (data.openIssues) state.issues = data.openIssues;
+        renderAll();
+    } catch(e) {
+        console.log('Initial state load failed, starting fresh');
+        initDefaultRooms();
+        renderAll();
+    }
+}
+
+function initDefaultRooms() {
+    [101,102,103,104,105,201,202,203,204,205].forEach(r => {
+        state.rooms[r] = { status: 'CLEAN', floor: r >= 200 ? 2 : 1 };
+    });
+}
+
+// --- Render Functions ---
+function renderAll() {
+    renderRooms();
+    renderOrders();
+    renderIssues();
+}
+
+function renderRooms() {
+    const grid = document.getElementById('roomGrid');
+    grid.innerHTML = '';
+    const rooms = [101,102,103,104,105,201,202,203,204,205];
+    rooms.forEach(roomNum => {
+        const info = state.rooms[roomNum] || { status: 'CLEAN' };
+        const status = info.status || 'CLEAN';
+        const card = document.createElement('div');
+        card.className = `room-card status-${status}`;
+        card.id = `room-${roomNum}`;
+        card.innerHTML = `
+            <div class="room-num">${roomNum}</div>
+            <div class="room-type">${roomTypes[roomNum] || ''} · F${roomFloors[roomNum]}</div>
+            <span class="room-status badge-${status}">${status}</span>
+            ${info.guestName ? `<div class="guest-name">${info.guestName}</div>` : ''}
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function renderOrders() {
+    const container = document.getElementById('ordersList');
+    const orders = Object.values(state.orders);
+    if (orders.length === 0) {
+        container.innerHTML = '<div class="empty-state">No active orders</div>';
+        return;
+    }
+    container.innerHTML = orders.map(o => `
+        <div class="order-item">
+            <div class="order-id">${o.orderId || ''}</div>
+            <div>Room <span class="order-room">${o.roomNumber}</span>
+                <span class="room-status badge-${o.status || 'RECEIVED'}" style="margin-left:8px">${o.status || ''}</span>
+            </div>
+            ${o.items ? `<div class="order-items-list">${o.items.join(', ')}</div>` : ''}
+            ${o.totalAmount ? `<div style="color:#4fc3f7;font-size:11px;margin-top:4px">$${o.totalAmount.toFixed(2)}</div>` : ''}
+        </div>
+    `).join('');
+}
+
+function renderIssues() {
+    const container = document.getElementById('issuesList');
+    const issues = Object.values(state.issues);
+    if (issues.length === 0) {
+        container.innerHTML = '<div class="empty-state">No open issues</div>';
+        return;
+    }
+    // Sort by urgency
+    const urgencyOrder = {CRITICAL:1,HIGH:2,NORMAL:3,LOW:4};
+    issues.sort((a,b) => (urgencyOrder[a.urgency]||9) - (urgencyOrder[b.urgency]||9));
+    container.innerHTML = issues.map(i => `
+        <div class="issue-item urgency-${i.urgency}">
+            <div class="issue-id">${i.issueId || ''}</div>
+            <div>Room <span class="issue-room">${i.roomNumber}</span>
+                <span style="font-size:10px;color:#ef5350;margin-left:8px">${i.urgency || ''}</span>
+                <span style="font-size:10px;color:#5a7a9a;margin-left:8px">${i.status || ''}</span>
+            </div>
+            <div class="issue-desc">${i.description || ''}</div>
+            ${i.assignedTo ? `<div class="issue-tech">👷 ${i.assignedTo}</div>` : ''}
+        </div>
+    `).join('');
+}
+
+// --- Event Log ---
+function addLogEntry(message) {
+    const log = document.getElementById('event-log');
+    const time = new Date().toLocaleTimeString();
+    const entry = document.createElement('div');
+    entry.className = 'log-entry new-entry';
+    entry.innerHTML = `<span class="log-time">${time}</span>${message}`;
+    log.insertBefore(entry, log.firstChild);
+    if (log.children.length > 50) log.lastChild.remove();
+}
+
+// --- WebSocket Connection ---
+function connectWebSocket() {
+    const socket = new SockJS('/ws');
+    const stompClient = Stomp.over(socket);
+    stompClient.debug = null; // suppress verbose STOMP logs
+
+    stompClient.connect({}, function(frame) {
+        document.getElementById('wsIndicator').className = 'ws-indicator connected';
+        document.getElementById('wsStatus').textContent = 'LIVE';
+        addLogEntry('WebSocket connected — receiving real-time updates');
+
+        // Subscribe to all hotel events
+        stompClient.subscribe('/topic/dashboard', function(message) {
+            const update = JSON.parse(message.body);
+            handleUpdate(update);
+        });
+    }, function(error) {
+        document.getElementById('wsIndicator').className = 'ws-indicator';
+        document.getElementById('wsStatus').textContent = 'Reconnecting...';
+        setTimeout(connectWebSocket, 5000); // auto-reconnect
+    });
+}
+
+function handleUpdate(update) {
+    const { type, data } = update;
+
+    switch(type) {
+        case 'ROOM_STATUS':
+            const roomNum = data.roomNumber;
+            state.rooms[roomNum] = Object.assign(state.rooms[roomNum] || {}, data);
+            renderRooms();
+            // Flash the updated room card
+            const card = document.getElementById(`room-${roomNum}`);
+            if (card) { card.classList.add('highlight-flash'); setTimeout(() => card.classList.remove('highlight-flash'), 600); }
+            addLogEntry(`Room ${roomNum} → <strong>${data.status}</strong>${data.guestName ? ' (' + data.guestName + ')' : ''}`);
+            break;
+
+        case 'ORDER_STATUS':
+            if (data.status === 'DELIVERED') {
+                delete state.orders[data.orderId];
+                addLogEntry(`Order ${data.orderId} delivered to Room ${data.roomNumber}`);
+            } else {
+                state.orders[data.orderId] = data;
+                addLogEntry(`Order ${data.orderId} Room ${data.roomNumber} → <strong>${data.status}</strong>`);
+            }
+            renderOrders();
+            break;
+
+        case 'ISSUE_STATUS':
+            if (data.status === 'RESOLVED') {
+                delete state.issues[data.issueId];
+                addLogEntry(`Issue ${data.issueId} RESOLVED in Room ${data.roomNumber}`);
+            } else {
+                state.issues[data.issueId] = data;
+                addLogEntry(`Maintenance: Room ${data.roomNumber} [${data.urgency}] ${data.description}`);
+            }
+            renderIssues();
+            break;
+    }
+}
+
+// --- Bootstrap ---
+loadInitialState().then(() => connectWebSocket());
+</script>
+
+</body>
+</html>
